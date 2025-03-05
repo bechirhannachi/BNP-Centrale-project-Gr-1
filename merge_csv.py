@@ -64,6 +64,8 @@ df_merged=df_merged[filter]
 
 
 df_merged = df_merged[df_merged["estimation_ges"] > 0]
+df_merged = df_merged[df_merged["surface_utile"] > 0]
+df_merged = df_merged[df_merged["shon"] > 0]
 df_merged = df_merged[df_merged["consommation_energie"] > 0]
 print(df_merged.head())
 #df_merged.to_csv("fusion.csv", index=False)

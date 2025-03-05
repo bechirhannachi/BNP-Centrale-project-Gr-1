@@ -1,7 +1,7 @@
 import pandas as pd
 
-df1 = pd.read_csv("dpe-tertiaire.csv")
-df2 = pd.read_csv("dpe-v2-tertiaire-2.csv")
+df1 = pd.read_csv("dpe.csv")
+df2 = pd.read_csv("dpe2.csv")
 
 
 colonnes_1 = list(set(df1.columns))

@@ -28,6 +28,7 @@ correspondances = {
 }
 
 
+
 for col1, col2 in correspondances.items():
     if col1 in df1.columns and col2 in df2.columns:
         type1, type2 = df1[col1].dtype, df2[col2].dtype

@@ -15,7 +15,8 @@ correspondances = {
     "secteur_activite": "Secteur_activité",
     #"code_postal": "Code_postal_(brut)",  # il faut voir si c pas mieux de mettre code postal ban
     "classe_estimation_ges" : "Etiquette_GES",
-    "estimation_ges" : "Emission_GES_kgCO2/m²/an"
+    "estimation_ges" : "Emission_GES_kgCO2/m²/an",
+    "consommation_energie" : "Conso_kWhep/m²/an"
 }
 
 

@@ -50,5 +50,15 @@ df_merged = pd.merge(
     right_on=list(correspondances.values()),
     how="outer"
 )
+
+Q1=df_merged['annee_construction'].quantile(0.25)
+Q3=df_merged['annee_construction'].quantile(0.75)
+IQR=Q3-Q1
+filter=(df_merged['annee_construction']>=(Q1-1.5*IQR))&(df_merged['annee_construction']<=(Q3+1.5*IQR))
+df_merged=df_merged[filter]
+
+
+df_merged = df_merged[df_merged["estimation_ges"] > 0]
+df_merged = df_merged[df_merged["consommation_energie"] > 0]
 print(df_merged.head())
 #df_merged.to_csv("fusion.csv", index=False)

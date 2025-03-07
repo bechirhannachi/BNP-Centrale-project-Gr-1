@@ -3,6 +3,9 @@ import pandas as pd
 df1 = pd.read_csv("dpe1.csv")
 df2 = pd.read_csv("dpe2.csv")
 
+from pyproj import Transformer
+transformer = Transformer.from_crs("EPSG:4326", "EPSG:2154", always_xy=True)
+df1[['X_L93', 'Y_L93']] = df1.apply(lambda row: transformer.transform(row['longitude'], row['latitude']), axis=1, result_type='expand')
 
 colonnes_1 = list(set(df1.columns))
 colonnes_2 = list(set(df2.columns))
@@ -16,7 +19,9 @@ correspondances = {
     #"code_postal": "Code_postal_(brut)",  # il faut voir si c pas mieux de mettre code postal ban
     "classe_estimation_ges" : "Etiquette_GES",
     "estimation_ges" : "Emission_GES_kgCO2/m²/an",
-    "consommation_energie" : "Conso_kWhep/m²/an"
+    "consommation_energie" : "Conso_kWhep/m²/an",
+    "X_L93" : "Coordonnée_cartographique_X_(BAN)",
+    "Y_L93" : "Coordonnée_cartographique_Y_(BAN)"
 }
 
 
@@ -50,5 +55,17 @@ df_merged = pd.merge(
     right_on=list(correspondances.values()),
     how="outer"
 )
+
+Q1=df_merged['annee_construction'].quantile(0.25)
+Q3=df_merged['annee_construction'].quantile(0.75)
+IQR=Q3-Q1
+filter=(df_merged['annee_construction']>=(Q1-1.5*IQR))&(df_merged['annee_construction']<=(Q3+1.5*IQR))
+df_merged=df_merged[filter]
+
+
+df_merged = df_merged[df_merged["estimation_ges"] > 0]
+df_merged = df_merged[df_merged["surface_utile"] > 0]
+df_merged = df_merged[df_merged["shon"] > 0]
+df_merged = df_merged[df_merged["consommation_energie"] > 0]
 print(df_merged.head())
 #df_merged.to_csv("fusion.csv", index=False)

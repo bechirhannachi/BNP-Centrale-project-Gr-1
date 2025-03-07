@@ -1,7 +1,10 @@
 import pandas as pd
 
-df1 = pd.read_csv("dpe1.csv")
-df2 = pd.read_csv("dpe2.csv")
+df1 = pd.read_csv("dpe1.csv", low_memory=False, dtype=str)  # Lire toutes les colonnes en str pour éviter le problème
+df2 = pd.read_csv("dpe2.csv", low_memory=False, dtype=str)
+
+
+
 
 from pyproj import Transformer
 transformer = Transformer.from_crs("EPSG:4326", "EPSG:2154", always_xy=True)
@@ -26,41 +29,42 @@ correspondances = {
 
 
 
-for col1, col2 in correspondances.items():
-    if col1 in df1.columns and col2 in df2.columns:
-        type1, type2 = df1[col1].dtype, df2[col2].dtype
-        
-        if pd.api.types.is_numeric_dtype(df1[col1]) and not pd.api.types.is_numeric_dtype(df2[col2]):
-            df2[col2] = pd.to_numeric(df2[col2], errors="coerce")
-        elif pd.api.types.is_numeric_dtype(df2[col2]) and not pd.api.types.is_numeric_dtype(df1[col1]):
-            df1[col1] = pd.to_numeric(df1[col1], errors="coerce")
+df2 = df2.rename(columns={v: k for k, v in correspondances.items()})
 
-for col1, col2 in correspondances.items():
-    if col1 in df1.columns and col2 in df2.columns:
-        type1, type2 = df1[col1].dtype, df2[col2].dtype
-        
-        if pd.api.types.is_numeric_dtype(df1[col1]) and not pd.api.types.is_numeric_dtype(df2[col2]):
-            df2[col2] = pd.to_numeric(df2[col2], errors="coerce")
-        elif pd.api.types.is_numeric_dtype(df2[col2]) and not pd.api.types.is_numeric_dtype(df1[col1]):
-            df1[col1] = pd.to_numeric(df1[col1], errors="coerce")
+# Garder uniquement les colonnes du dictionnaire
+colonnes_finales = list(correspondances.keys())
+df1 = df1[colonnes_finales]
+df2 = df2[colonnes_finales]
 
-print("Clés de df1 utilisées pour le merge :", list(correspondances.keys()))
-print("Clés correspondantes dans df2 :", list(correspondances.values()))
-print("Nombre de clés communes :", len(correspondances))
+colonnes_numeriques = ["surface_utile", "shon", "estimation_ges", "consommation_energie", "X_L93", "Y_L93"]
+for col in colonnes_numeriques:
+    df1[col] = pd.to_numeric(df1[col], errors="coerce")
+    df2[col] = pd.to_numeric(df2[col], errors="coerce")
 
-df_merged = pd.merge(
-    df1,
-    df2,
-    left_on=list(correspondances.keys()),
-    right_on=list(correspondances.values()),
-    how="outer"
-)
+# Convertir les colonnes en types compatibles
+for col in colonnes_finales:
+    df1[col] = pd.to_numeric(df1[col], errors="coerce") if pd.api.types.is_numeric_dtype(df2[col]) else df1[col].astype(str)
+    df2[col] = pd.to_numeric(df2[col], errors="coerce") if pd.api.types.is_numeric_dtype(df1[col]) else df2[col].astype(str)
 
-Q1=df_merged['annee_construction'].quantile(0.25)
-Q3=df_merged['annee_construction'].quantile(0.75)
-IQR=Q3-Q1
-filter=(df_merged['annee_construction']>=(Q1-1.5*IQR))&(df_merged['annee_construction']<=(Q3+1.5*IQR))
-df_merged=df_merged[filter]
+
+
+# Concaténer les DataFrames verticalement
+df_merged = pd.concat([df1, df2], ignore_index=True)
+
+# Filtrer les valeurs aberrantes
+df_merged = df_merged[df_merged["estimation_ges"] > 0]
+df_merged = df_merged[df_merged["surface_utile"] > 0]
+df_merged = df_merged[df_merged["shon"] > 0]
+df_merged = df_merged[df_merged["consommation_energie"] > 0]
+
+
+# Sauvegarder le fichier final
+df_merged.to_csv("fusion.csv", index=False)
+
+
+colonnes_finales = list(correspondances.keys())
+
+df_merged = df_merged[colonnes_finales]
 
 
 df_merged = df_merged[df_merged["estimation_ges"] > 0]

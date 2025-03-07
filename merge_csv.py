@@ -1,7 +1,7 @@
 import pandas as pd
 
-df1 = pd.read_csv("dpe1.csv", low_memory=False, dtype=str)  # Lire toutes les colonnes en str pour éviter le problème
-df2 = pd.read_csv("dpe2.csv", low_memory=False, dtype=str)
+df1 = pd.read_csv("df1.csv", low_memory=False, dtype=str)  # Lire toutes les colonnes en str pour éviter le problème
+df2 = pd.read_csv("df2.csv", low_memory=False, dtype=str)
 
 
 

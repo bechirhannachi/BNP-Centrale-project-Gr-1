@@ -16,7 +16,8 @@ colonnes_2 = list(set(df2.columns))
 correspondances = {
     "surface_utile": "Surface_utile",
     "shon": "Surface_(SHON)",
-    "date_visite_diagnostiqueur" : "Date_visite_diagnostiqueur",
+    "date_etablissement_dpe" : "Date_établissement_DPE",
+    #utiliser date_etabablissement_dpe
     "annee_construction": "Année_construction",
     "secteur_activite": "Secteur_activité",
     #"code_postal": "Code_postal_(brut)",  # il faut voir si c pas mieux de mettre code postal ban

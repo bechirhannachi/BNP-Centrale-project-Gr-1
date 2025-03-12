@@ -59,7 +59,6 @@ df_merged = df_merged[df_merged["consommation_energie"] >= 0]
 
 
 # Sauvegarder le fichier final
-df_merged.to_csv("fusion.csv", index=False)
 
 
 colonnes_finales = list(correspondances.keys())
@@ -67,4 +66,4 @@ colonnes_finales = list(correspondances.keys())
 df_merged = df_merged[colonnes_finales]
 
 print(df_merged.head())
-#df_merged.to_csv("fusion.csv", index=False)
+df_merged.to_csv("fusion.csv", index=False)

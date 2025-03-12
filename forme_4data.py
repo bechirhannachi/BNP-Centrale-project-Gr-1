@@ -22,10 +22,10 @@ category_columns = encoder.get_feature_names_out(['secteur_activite'])
 df_encoded = pd.DataFrame(category_encoded, columns=category_columns)
 # 🔹 Centrer et normaliser les features numériques
 scaler = StandardScaler()
-features_scaled = scaler.fit_transform(df[['surface_utile', 'shon','estimation_ges','consommation_energie']])
+features_scaled = scaler.fit_transform(df[['shon','estimation_ges','consommation_energie']])
 
 # Convertir en DataFrame pour manipulation facile
-df_features_scaled = pd.DataFrame(features_scaled, columns=['surface_utile', 'shon','estimation_ges','consommation_energie'])
+df_features_scaled = pd.DataFrame(features_scaled, columns=['shon','estimation_ges','consommation_energie'])
 
 # 🔹Fusionner features normalisés + variables one-hot encodées
 df_combined = pd.concat([df_features_scaled, df_encoded], axis=1)
@@ -39,7 +39,7 @@ df_imputed = pd.DataFrame(imputer.fit_transform(df_combined), columns=df_combine
 df_imputed['secteur_activite'] = encoder.inverse_transform(df_imputed[category_columns])
 
 # Garder uniquement les colonnes originales
-df_final = df[['surface_utile', 'shon','estimation_ges','consommation_energie']].copy()
+df_final = df[['shon','estimation_ges','consommation_energie']].copy()
 df_final['secteur_activite'] = df_imputed['secteur_activite']
 
 

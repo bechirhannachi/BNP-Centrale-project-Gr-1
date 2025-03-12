@@ -1,5 +1,6 @@
 import pandas as pd
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.impute import KNNImputer
+from sklearn.preprocessing import OneHotEncoder
 # Charger le fichier fusionné
 df = pd.read_csv("fusion.csv")
 
@@ -9,27 +10,32 @@ df_numeric = df.select_dtypes(include=["number"])  # Sélectionne seulement les 
 df[df_numeric.columns] = df_numeric.fillna(df_numeric.median())
 
 
-# Séparer les données avec et sans valeurs manquantes
-# df_train = df.dropna(subset=['secteur_activite'])  # Lignes sans valeurs manquantes
-# df_missing = df[df['secteur_activite'].isna()]    # Lignes à compléter
 
-# # Encodage des catégories
-# secteur_activite_map = {val: idx for idx, val in enumerate(df_train['secteur_activite'].unique())}
-# df_train['secteur_activite_encoded'] = df_train['secteur_activite'].map(secteur_activite_map)
 
-# # Entraînement du modèle KNN
-# knn = KNeighborsClassifier(n_neighbors=3)
-# knn.fit(df_train[['surface_utile', 'shon','estimation_ges','consommation_energie']], df_train['secteur_activite_encoded'])
 
-# # Prédiction des valeurs manquantes
-# df_missing['secteur_activite_encoded'] = knn.predict(df_missing[['surface_utile', 'shon','estimation_ges','consommation_energie']])
+# Étape 1: One-Hot Encoding de la variable cible
+encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+category_encoded = encoder.fit_transform(df[['secteur_activite']])
 
-# # Décodage des catégories prédites
-# reverse_secteur_activite_map = {v: k for k, v in secteur_activite_map.items()}
-# df_missing['secteur_activite'] = df_missing['secteur_activite_encoded'].map(reverse_secteur_activite_map)
+# Ajouter les colonnes encodées dans le DataFrame
+category_columns = encoder.get_feature_names_out(['secteur_activite'])
+df_encoded = pd.DataFrame(category_encoded, columns=category_columns)
 
-# # Réintégration des données complétées
-# df_filled = pd.concat([df_train.drop(columns=['secteur_activite_encoded']), df_missing.drop(columns=['secteur_activite_encoded'])])
+# Fusionner avec les features numériques
+df_combined = pd.concat([df[['surface_utile', 'shon','estimation_ges','consommation_energie']], df_encoded], axis=1)
+
+# Étape 2: Utilisation de KNNImputer
+imputer = KNNImputer(n_neighbors=3)
+df_imputed = pd.DataFrame(imputer.fit_transform(df_combined), columns=df_combined.columns)
+
+# Étape 3: Reconvertir les colonnes One-Hot en catégorie
+df_imputed['secteur_activite'] = encoder.inverse_transform(df_imputed[category_columns])
+
+# Garder uniquement les colonnes originales
+df_final = df[['surface_utile', 'shon','estimation_ges','consommation_energie']].copy()
+df_final['secteur_activite'] = df_imputed['secteur_activite']
+
+
 
 
 # Dictionnaire des valeurs possibles et des noms de fichiers associés

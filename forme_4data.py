@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.impute import KNNImputer
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 # Charger le fichier fusionné
 df = pd.read_csv("fusion.csv")
 
@@ -13,16 +13,23 @@ df[df_numeric.columns] = df_numeric.fillna(df_numeric.median())
 
 
 
-# Étape 1: One-Hot Encoding de la variable cible
+# Étape 1: One-Hot Encoding de la variable cible, centrer et normaliser les variables numériques 
 encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
 category_encoded = encoder.fit_transform(df[['secteur_activite']])
 
 # Ajouter les colonnes encodées dans le DataFrame
 category_columns = encoder.get_feature_names_out(['secteur_activite'])
 df_encoded = pd.DataFrame(category_encoded, columns=category_columns)
+# 🔹 Centrer et normaliser les features numériques
+scaler = StandardScaler()
+features_scaled = scaler.fit_transform(df[['surface_utile', 'shon','estimation_ges','consommation_energie']])
 
-# Fusionner avec les features numériques
-df_combined = pd.concat([df[['surface_utile', 'shon','estimation_ges','consommation_energie']], df_encoded], axis=1)
+# Convertir en DataFrame pour manipulation facile
+df_features_scaled = pd.DataFrame(features_scaled, columns=['surface_utile', 'shon','estimation_ges','consommation_energie'])
+
+# 🔹Fusionner features normalisés + variables one-hot encodées
+df_combined = pd.concat([df_features_scaled, df_encoded], axis=1)
+
 
 # Étape 2: Utilisation de KNNImputer
 imputer = KNNImputer(n_neighbors=3)

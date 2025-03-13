@@ -1,11 +1,14 @@
 import pandas as pd
 from sklearn.impute import KNNImputer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+import numpy as np
 # Charger le fichier fusionné
 df = pd.read_csv("fusion.csv")
 
 # Remplir uniquement les colonnes numériques avec la médiane
 df_numeric = df.select_dtypes(include=["number"])  # Sélectionne seulement les colonnes numériques
+cols_to_replace = ['shon']  # Liste des colonnes où traiter les 0 comme NaN
+df[cols_to_replace] = df[cols_to_replace].replace(0, np.nan)
 # On bouche les trous par la médiane car c'est plus robuste que la moyenne
 df[df_numeric.columns] = df_numeric.fillna(df_numeric.median())
 
@@ -34,9 +37,10 @@ df_combined = pd.concat([df_features_scaled, df_encoded], axis=1)
 # Étape 2: Utilisation de KNNImputer
 imputer = KNNImputer(n_neighbors=3)
 df_imputed = pd.DataFrame(imputer.fit_transform(df_combined), columns=df_combined.columns)
-
+df_imputed.head()
 # Étape 3: Reconvertir les colonnes One-Hot en catégorie
-df_imputed['secteur_activite'] = encoder.inverse_transform(df_imputed[category_columns])
+df_imputed[category_columns] = (df_imputed[category_columns] == df_imputed[category_columns].to_numpy().max(axis=1, keepdims=True)).astype(int)
+df_imputed['secteur_activite'] = encoder.inverse_transform(df_imputed[category_columns]).ravel()
 
 # Garder uniquement les colonnes originales
 df_final = df[['shon','estimation_ges','consommation_energie']].copy()

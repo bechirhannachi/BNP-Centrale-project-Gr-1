@@ -46,7 +46,7 @@ for i, sector in enumerate(sectors):
     sector_df.set_index('date_etablissement_dpe', inplace=True)
     
     # Ajuster le modèle ARIMA
-    model = ARIMA(sector_df['ges_final'], order =(10,0,10))
+    model = ARIMA(sector_df['ges_final'], order =(10,1,10))
     model_fit = model.fit()
     
     # Résumé du modèle

@@ -7,7 +7,7 @@ df = pd.read_csv("fusion.csv")
 
 # Remplir uniquement les colonnes numériques avec la médiane
 df_numeric = df.select_dtypes(include=["number"])  # Sélectionne seulement les colonnes numériques
-cols_to_replace = ['shon']  # Liste des colonnes où traiter les 0 comme NaN
+cols_to_replace = ['shon','consommation_energie']  # Liste des colonnes où traiter les 0 comme NaN
 df[cols_to_replace] = df[cols_to_replace].replace(0, np.nan)
 # On bouche les trous par la médiane car c'est plus robuste que la moyenne
 df[df_numeric.columns] = df_numeric.fillna(df_numeric.median())

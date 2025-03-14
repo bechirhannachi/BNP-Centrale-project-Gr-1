@@ -123,33 +123,3 @@ df_imputed['secteur_activite'] = encoder.inverse_transform(df_imputed[category_c
 df_final = df[['date_etablissement_dpe','shon','estimation_ges','consommation_energie']].copy().reset_index()
 df_final['secteur_activite']=df_imputed['secteur_activite']
 df_final.to_csv('final_data.csv',index=False)
-
-
-
-
-# %%
-dict_fichiers = {
-    "Autres cas (par exemple: théâtres, salles de sport, restauration, commerces individuels, etc)": "autre.csv",
-    "Bâtiment à occupation continue (par exemple: hopitaux, hôtels, internats, maisons de retraite, etc)": "occupation_continue.csv",
-    "Centre commercial": "centre_commercial.csv",
-    "Bâtiment à usage principale de bureau, d'administration ou d'enseignement": "bureau_admin_enseignement.csv"
-}
-
-df["date_etablissement_dpe"] = pd.to_datetime(df["date_etablissement_dpe"], errors="coerce")
-
-# Boucle pour filtrer et enregistrer chaque catégorie
-for valeur, fichier in dict_fichiers.items():
-    df_filtre = df[df["secteur_activite"] == valeur].copy()
-    
-    # Créer une colonne "mois" au format YYYY-MM
-    df_filtre["mois"] = df_filtre["date_etablissement_dpe"].dt.to_period("M")
-    
-    # Calculer la moyenne pondérée des émissions de GES pour chaque mois
-    df_mois = df_filtre.groupby("mois").apply(
-        lambda g: (g["estimation_ges"] * g["shon"]).sum() / g["shon"].sum(),
-        include_groups=False
-    ).reset_index(name="estimation_ges")
-    
-    # Sauvegarder avec "_mois" ajouté au nom du fichier
-    fichier_mois = fichier.replace(".csv", "_mois.csv")
-    df_mois.to_csv(fichier_mois, index=False)

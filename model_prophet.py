@@ -3,13 +3,15 @@ from prophet import Prophet
 import matplotlib.pyplot as plt
 
 # Charger les données
-df = pd.read_csv("data1_agg.csv")
+df = pd.read_csv("centre_commercial.csv")
 
 # Renommer les colonnes pour Prophet
-df.rename(columns={"date_etablissement_dpe": "ds", "moyenne_ponderee_ges": "y"}, inplace=True)
+df.rename(columns={"date_etablissement_dpe": "ds", "estimation_ges": "y"}, inplace=True)
 
-# Convertir la colonne ds en datetime
-df["ds"] = pd.to_datetime(df["ds"])
+
+df["ds"] = pd.to_datetime(df["ds"], errors="coerce")
+
+df = df.dropna(subset=["ds", "y"])
 
 # Trier les données par date (au cas où)
 df = df.sort_values(by="ds")
@@ -34,6 +36,6 @@ plt.plot(test["ds"], test["y"], label="Test (réel)", color="green")
 plt.plot(test["ds"], forecast["yhat"], label="Prédictions", color="red")
 plt.fill_between(test["ds"], forecast["yhat_lower"], forecast["yhat_upper"], color='pink', alpha=0.3) # Intervalle de confiance
 plt.legend()
-plt.ylim(0,5000)
+plt.ylim(0,100)
 plt.title("Comparaison des prédictions et des données réelles")
 plt.show()

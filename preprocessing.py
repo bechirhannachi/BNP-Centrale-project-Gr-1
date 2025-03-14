@@ -36,6 +36,9 @@ df1.dropna(subset=['secteur_activite'], inplace=True)
 
 #%%  Mapping sur la base 2
 df2 = pd.read_csv('dpe2.csv')
+filter=(df2['Date_établissement_DPE']>'1677-09-21') & (df2['Date_établissement_DPE']<'2026')
+df2=df2[filter]
+df2['Date_établissement_DPE']=pd.to_datetime(df2['Date_établissement_DPE'])
 df2['Secteur_activité'] = df2['Secteur_activité'].map(mapping)
 df2.dropna(subset=['Secteur_activité'], inplace=True)
 
@@ -123,3 +126,4 @@ df_imputed['secteur_activite'] = encoder.inverse_transform(df_imputed[category_c
 df_final = df[['date_etablissement_dpe','shon','estimation_ges','consommation_energie']].copy().reset_index()
 df_final['secteur_activite']=df_imputed['secteur_activite']
 df_final.to_csv('final_data.csv',index=False)
+# %%

@@ -10,6 +10,13 @@ files = {
     'bureau_admin_enseignement.csv': 'Bureau Admin Enseignement'
 }
 
+# files = {
+#     'occupation_continue_mois.csv': 'Occupation Continue',
+#     'centre_commercial_mois.csv': 'Centre Commercial',
+#     'autre_mois.csv': 'Autre',
+#     'bureau_admin_enseignement_mois.csv': 'Bureau Admin Enseignement'
+# }
+
 fig, axs = plt.subplots(len(files), 1, figsize=(12, 8), sharex=True)
 
 for i, (file, sector) in enumerate(files.items()):
@@ -20,6 +27,9 @@ for i, (file, sector) in enumerate(files.items()):
     df['date_etablissement_dpe'] = pd.to_datetime(df['date_etablissement_dpe'], format ='mixed')
     df.set_index('date_etablissement_dpe', inplace=True)
     
+    # df['mois'] = pd.to_datetime(df['mois'], format ='mixed')
+    # df.set_index('mois', inplace=True)
+
     # Split data into training (80%) and testing (20%)
     train_size = int(len(df) * 0.8)
     train, test = df.iloc[:train_size], df.iloc[train_size:]

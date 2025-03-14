@@ -55,11 +55,15 @@ for i, sector in enumerate(sectors):
     print(f"Résumé du modèle pour le secteur {sector}:")
     print(model_fit.summary())
     
-    # Faire des prédictions
+    # Faire des prédictions sur les données d'entraînement
+    train_predictions = model_fit.predict(start=train.index[0], end=train.index[-1])
+    
+    # Faire des prédictions sur les données de test
     forecast = model_fit.forecast(steps=len(test))
     
     # Tracer les résultats
     axs[i].plot(sector_df['ges_final'], label=f'Historique {sector}')
+    axs[i].plot(train.index, train_predictions, label=f'Prévisions Entraînement {sector}', color='red')
     axs[i].plot(test.index, test['ges_final'], label=f'Réalité {sector}', color='green')
     axs[i].plot(test.index, forecast, label=f'Prévisions {sector}', linestyle='--')
     axs[i].set_title(f'Secteur {sector}')

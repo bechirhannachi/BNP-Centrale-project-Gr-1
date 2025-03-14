@@ -7,3 +7,9 @@ autre.csv
 centre_commercial.csv
 bureau_admin_enseignement.csv
 occupation_continue.csv
+final_data.csv
+arima.py
+autre_mois.csv
+centre_commercial_mois.csv
+bureau_admin_enseignement_mois.csv
+occupation_continue_mois.csv

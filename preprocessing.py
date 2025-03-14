@@ -120,29 +120,11 @@ df_imputed[category_columns] = (df_imputed[category_columns] == df_imputed[categ
 df_imputed['secteur_activite'] = encoder.inverse_transform(df_imputed[category_columns]).ravel()
 
 # Garder uniquement les colonnes originales
-df_final = df[['date_etablissement_dpe','shon','estimation_ges','consommation_energie']].copy()
-df_final['secteur_activite'] = df_imputed['secteur_activite']
+df_final = df[['date_etablissement_dpe','shon','estimation_ges','consommation_energie']].copy().reset_index()
+df_final['secteur_activite']=df_imputed['secteur_activite']
+df_final.to_csv('final_data.csv',index=False)
 
 
-#%%  Séparer les bâtiments selon le secteur d'activité
-
-
-# Dictionnaire des valeurs possibles et des noms de fichiers associés
-dict = {
-    "Autres cas (par exemple: théâtres, salles de sport, restauration, commerces individuels, etc)": "autre.csv",
-    "Bâtiment à occupation continue (par exemple: hopitaux, hôtels, internats, maisons de retraite, etc)": "occupation_continue.csv",
-    "Centre commercial": "centre_commercial.csv",
-    "Bâtiment à usage principale de bureau, d'administration ou d'enseignement": "bureau_admin_enseignement.csv"
-}
-
-# Boucle pour filtrer et enregistrer chaque catégorie
-for valeur, fichier in dict.items():
-    df_filtre = df[df["secteur_activite"] == valeur]
-    df_filtre = df_filtre.groupby('date_etablissement_dpe').apply(
-    lambda g: (g['estimation_ges'] * g['shon']).sum() / g['shon'].sum()
-,include_groups=False).reset_index(name='estimation_ges')
-    df_filtre.to_csv(fichier, index=False)
-    print(f"{len(df_filtre)} lignes enregistrées dans {fichier}")
 
 
 # %%

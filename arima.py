@@ -14,11 +14,16 @@ filter2 = df['surface_utile'] > 0
 filter3 = df['estimation_ges'] > 0
 df = df[filter1 & filter2 & filter3]
 
-Q1 = df['estimation_ges'].quantile(0.25)
-Q3 = df['estimation_ges'].quantile(0.75)
-IQR = Q3 - Q1
-filter = (df['estimation_ges'] >= (Q1 - 1.5 * IQR)) & (df['estimation_ges'] <= (Q3 + 1.5 * IQR))
+# Q1 = df['estimation_ges'].quantile(0.25)
+# Q3 = df['estimation_ges'].quantile(0.75)
+# IQR = Q3 - Q1
+# filter = (df['estimation_ges'] >= (Q1 - 1.5 * IQR)) & (df['estimation_ges'] <= (Q3 + 1.5 * IQR))
+# df = df[filter]
+
+Q95 = df['estimation_ges'].quantile(0.95)
+filter = df['estimation_ges'] <= Q95
 df = df[filter]
+
 
 # Calcul du GES total pondéré par la surface SHON
 df['ges_weighted'] = df['estimation_ges'] * df['shon']

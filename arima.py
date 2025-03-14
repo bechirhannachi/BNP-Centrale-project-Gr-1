@@ -1,59 +1,31 @@
 import pandas as pd
-import numpy as np
 from statsmodels.tsa.arima.model import ARIMA
 import matplotlib.pyplot as plt
 
-df = pd.read_csv('fusion.csv')
+# Liste des fichiers CSV et des secteurs correspondants
+files = {
+    'occupation_continue.csv': 'Occupation Continue',
+    'centre_commercial.csv': 'Centre Commercial',
+    'autre.csv': 'Autre',
+    'bureau_admin_enseignement.csv': 'Bureau Admin Enseignement'
+}
 
-# Convertir la colonne 'date' en datetime
-df['date_etablissement_dpe'] = pd.to_datetime(df['date_etablissement_dpe'])
-df.sort_values(by=['date_etablissement_dpe', 'secteur_activite'], inplace=True)
+fig, axs = plt.subplots(len(files), 1, figsize=(12, 8), sharex=True)
 
-filter1 = df['shon'] > 0
-filter2 = df['surface_utile'] > 0
-filter3 = df['estimation_ges'] > 0
-df = df[filter1 & filter2 & filter3]
-
-# Q1 = df['estimation_ges'].quantile(0.25)
-# Q3 = df['estimation_ges'].quantile(0.75)
-# IQR = Q3 - Q1
-# filter = (df['estimation_ges'] >= (Q1 - 1.5 * IQR)) & (df['estimation_ges'] <= (Q3 + 1.5 * IQR))
-# df = df[filter]
-
-Q95 = df['estimation_ges'].quantile(0.95)
-filter = df['estimation_ges'] <= Q95
-df = df[filter]
-
-
-# Calcul du GES total pondéré par la surface SHON
-df['ges_weighted'] = df['estimation_ges'] * df['shon']
-
-# Regroupement et calcul du ratio correct
-df_grouped = df.groupby(['date_etablissement_dpe', 'secteur_activite']).agg({
-    'ges_weighted': 'sum',  # Somme des GES pondérés
-    'shon': 'sum'           # Somme des surfaces utiles
-}).reset_index()
-
-# Calcul du GES moyen pondéré
-df_grouped['ges_final'] = df_grouped['ges_weighted'] / df_grouped['shon']
-
-print(df_grouped.columns)
-
-# Ajuster le modèle ARIMA pour chaque secteur d'activité
-sectors = df_grouped['secteur_activite'].unique()
-
-fig, axs = plt.subplots(len(sectors), 1, figsize=(12, 8), sharex=True)
-
-for i, sector in enumerate(sectors):
-    sector_df = df_grouped[df_grouped['secteur_activite'] == sector]
-    sector_df.set_index('date_etablissement_dpe', inplace=True)
+for i, (file, sector) in enumerate(files.items()):
+    # Lire le fichier CSV
+    df = pd.read_csv(file)
+    
+    # Convertir la colonne 'date_etablissement_dpe' en datetime
+    df['date_etablissement_dpe'] = pd.to_datetime(df['date_etablissement_dpe'], format ='mixed')
+    df.set_index('date_etablissement_dpe', inplace=True)
     
     # Split data into training (80%) and testing (20%)
-    train_size = int(len(sector_df) * 0.8)
-    train, test = sector_df.iloc[:train_size], sector_df.iloc[train_size:]
+    train_size = int(len(df) * 0.8)
+    train, test = df.iloc[:train_size], df.iloc[train_size:]
     
     # Ajuster le modèle ARIMA
-    model = ARIMA(train['ges_final'], order=(10, 1, 10))
+    model = ARIMA(train['estimation_ges'], order=(10, 1, 10))
     model_fit = model.fit()
     
     # Résumé du modèle
@@ -67,9 +39,9 @@ for i, sector in enumerate(sectors):
     forecast = model_fit.forecast(steps=len(test))
     
     # Tracer les résultats
-    axs[i].plot(sector_df['ges_final'], label=f'Historique {sector}')
+    axs[i].plot(df['estimation_ges'], label=f'Historique {sector}')
     axs[i].plot(train.index, train_predictions, label=f'Prévisions Entraînement {sector}', color='red')
-    axs[i].plot(test.index, test['ges_final'], label=f'Réalité {sector}', color='green')
+    axs[i].plot(test.index, test['estimation_ges'], label=f'Réalité {sector}', color='green')
     axs[i].plot(test.index, forecast, label=f'Prévisions {sector}', linestyle='--')
     axs[i].set_title(f'Secteur {sector}')
     axs[i].legend()

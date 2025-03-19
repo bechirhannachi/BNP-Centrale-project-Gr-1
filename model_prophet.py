@@ -3,19 +3,26 @@ from prophet import Prophet
 import matplotlib.pyplot as plt
 
 # Charger les données
-df = pd.read_csv("centre_commercial.csv")
+df = pd.read_csv("centre_commercial_mois.csv")
 
 # Renommer les colonnes pour Prophet
-df.rename(columns={"date_etablissement_dpe": "ds", "estimation_ges": "y"}, inplace=True)
+# la ligne en dessous sert pour les fichiers csv où on regarde par jour
+#df.rename(columns={"date_etablissement_dpe": "ds", "estimation_ges": "y"}, inplace=True)
+
+
+# la ligne en dessous sert pour les fichiers csv où on regarde par mois
+df.rename(columns={"mois": "ds", "estimation_ges": "y"}, inplace=True)
 
 
 df["ds"] = pd.to_datetime(df["ds"], errors="coerce")
 
-df = df.dropna(subset=["ds", "y"])
+#df = df.dropna(subset=["ds", "y"])
 
 # Trier les données par date (au cas où)
 df = df.sort_values(by="ds")
 
+
+df["cap"] = df["y"].quantile(0.1)  # 95e percentile comme valeur maximale
 # Découper en 80% train, 20% test
 train_size = int(len(df) * 0.8)
 train = df.iloc[:train_size]
@@ -27,6 +34,7 @@ model.fit(train)
 
 # Faire des prédictions sur la période du test
 future = test[["ds"]]  # On garde les dates du test
+future["cap"] = df["cap"].max()  # Valeur maximale pour le futur
 forecast = model.predict(future)
 
 # Visualisation des résultats

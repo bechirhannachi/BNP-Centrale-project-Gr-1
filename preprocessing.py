@@ -7,9 +7,9 @@ import numpy as np
 
 # %% Mapping sur la base 1
 df1=pd.read_csv('dpe1.csv')
-filter1=(df1['date_visite_diagnostiqueur']>'1677-09-21') & (df1['date_visite_diagnostiqueur']<'2026')
-filter2=(df1['date_etablissement_dpe']>'1677-09-21') & (df1['date_etablissement_dpe']<'2026')
-filter3=(df1['date_arrete_tarifs_energies']>'1677-09-21') & (df1['date_arrete_tarifs_energies']<'2026')
+filter1=(df1['date_visite_diagnostiqueur']>'2013-01-01') & (df1['date_visite_diagnostiqueur']<'2026')
+filter2=(df1['date_etablissement_dpe']>'2013-01-01') & (df1['date_etablissement_dpe']<'2026')
+filter3=(df1['date_arrete_tarifs_energies']>'2013-01-01') & (df1['date_arrete_tarifs_energies']<'2026')
 df1=df1[filter1&filter2&filter3]
 df1['date_visite_diagnostiqueur']=pd.to_datetime(df1['date_visite_diagnostiqueur'])
 df1['date_etablissement_dpe']=pd.to_datetime(df1['date_etablissement_dpe'])
@@ -36,7 +36,7 @@ df1.dropna(subset=['secteur_activite'], inplace=True)
 
 #%%  Mapping sur la base 2
 df2 = pd.read_csv('dpe2.csv')
-filter=(df2['Date_établissement_DPE']>'1677-09-21') & (df2['Date_établissement_DPE']<'2026')
+filter=(df2['Date_établissement_DPE']>'2013-01-01') & (df2['Date_établissement_DPE']<'2026')
 df2=df2[filter]
 df2['Date_établissement_DPE']=pd.to_datetime(df2['Date_établissement_DPE'])
 df2['Secteur_activité'] = df2['Secteur_activité'].map(mapping)

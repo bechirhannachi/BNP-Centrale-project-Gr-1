@@ -32,31 +32,38 @@ for i, (name, file) in enumerate(datasets.items(), 1):
     test = df.iloc[train_size:]
 
     # Modèle Prophet (sans saisonnalité)
-    model = Prophet()
+    model = Prophet(yearly_seasonality=True,weekly_seasonality=True)
     model.fit(train)
     
-    # Prédictions
-    future = test[["ds"]]
-    forecast = model.predict(future)
+    # Prédictions sur la période de test
+    future_test = test[["ds"]]
+    forecast_test = model.predict(future_test)
 
     # Calcul des scores
     y_true = test["y"].values
-    y_pred = forecast["yhat"].values
+    y_pred = forecast_test["yhat"].values
     
     mae = mean_absolute_error(y_true, y_pred)
     rmse = np.sqrt(mean_squared_error(y_true, y_pred))
     mape = np.mean(np.abs((y_true - y_pred) / y_true)) * 100  # En pourcentage
-    
-    scores[name] = {"MAE": mae, "RMSE": rmse, "MAPE": mape}
-
+    mse = mean_squared_error(y_true, y_pred)
+    scores[name] = {"MAE": mae, "RMSE": rmse, "MSE": mse, "MAPE": mape}
+    # Prédictions jusqu'en 2030
+    future_2030 = model.make_future_dataframe(periods=(2030 - df["ds"].dt.year.max()) * 12, freq="M")
+    forecast_2030 = model.predict(future_2030)
+    forecast_2030 = forecast_2030[forecast_2030["ds"] > test["ds"].max()]
     # Affichage des résultats
     plt.subplot(2, 2, i)
     plt.plot(train["ds"], train["y"], label="Train", color="black")
     plt.plot(test["ds"], test["y"], label="Test (réel)", color=colors[i-1])
-    plt.plot(test["ds"], forecast["yhat"], label="Prédictions", color="red")
-    plt.fill_between(test["ds"], forecast["yhat_lower"], forecast["yhat_upper"], color='pink', alpha=0.3)
+    plt.plot(test["ds"], forecast_test["yhat"], label="Prédictions Test", color="red")
+    plt.fill_between(test["ds"], forecast_test["yhat_lower"], forecast_test["yhat_upper"], color='pink', alpha=0.3)
+    
+    # Ajout des prédictions jusqu'en 2030
+    plt.plot(forecast_2030["ds"], forecast_2030["yhat"], label="Prédictions 2030", color="green")
+    plt.fill_between(forecast_2030["ds"], forecast_2030["yhat_lower"], forecast_2030["yhat_upper"], color='lightgreen', alpha=0.3)
 
-    plt.title(f"{name}")
+    plt.title(f"{name}\nMSE: {mse:.2f}")
     plt.legend()
     plt.ylim(0, 100)
 
@@ -69,3 +76,4 @@ for domain, metrics in scores.items():
     print(f"   📌 MAE  = {metrics['MAE']:.2f}")
     print(f"   📌 RMSE = {metrics['RMSE']:.2f}")
     print(f"   📌 MAPE = {metrics['MAPE']:.2f}%\n")
+    print(f"   📌 MSE  = {metrics['MSE']:.2f}")

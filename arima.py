@@ -1,6 +1,6 @@
 import pandas as pd
 from statsmodels.tsa.arima.model import ARIMA
-from sklearn.metrics import mean_absolute_percentage_error
+from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 
 # Liste des fichiers CSV et des secteurs correspondants
@@ -13,19 +13,19 @@ import matplotlib.pyplot as plt
 import matplotlib.pyplot as plt
 
 # Liste des fichiers CSV et des secteurs correspondants
-# files = {
-#     'occupation_continue.csv': 'Occupation Continue',
-#     'centre_commercial.csv': 'Centre Commercial',
-#     'autre.csv': 'Autre',
-#     'bureau_admin_enseignement.csv': 'Bureau Admin Enseignement'
-# }
-
 files = {
-    'occupation_continue_mois.csv': 'Occupation Continue',
-    'centre_commercial_mois.csv': 'Centre Commercial',
-    'autre_mois.csv': 'Autre',
-    'bureau_admin_enseignement_mois.csv': 'Bureau Admin Enseignement'
+    'occupation_continue.csv': 'Occupation Continue',
+    'centre_commercial.csv': 'Centre Commercial',
+    'autre.csv': 'Autre',
+    'bureau_admin_enseignement.csv': 'Bureau Admin Enseignement'
 }
+
+# files = {
+#     'occupation_continue_mois.csv': 'Occupation Continue',
+#     'centre_commercial_mois.csv': 'Centre Commercial',
+#     'autre_mois.csv': 'Autre',
+#     'bureau_admin_enseignement_mois.csv': 'Bureau Admin Enseignement'
+# }
 
 # fig, axs = plt.subplots(len(files), 1, figsize=(12, 8), sharex=True)
 
@@ -92,11 +92,11 @@ for i, (file, sector) in enumerate(files.items()):
     df = pd.read_csv(file)
     
     # Convertir la colonne 'date_etablissement_dpe' en datetime
-    # df['date_etablissement_dpe'] = pd.to_datetime(df['date_etablissement_dpe'], format ='mixed')
-    # df.set_index('date_etablissement_dpe', inplace=True)
+        # df['date_etablissement_dpe'] = pd.to_datetime(df['date_etablissement_dpe'], format ='mixed')
+        # df.set_index('date_etablissement_dpe', inplace=True)
     
-    df['mois'] = pd.to_datetime(df['mois'], format ='mixed')
-    df.set_index('mois', inplace=True)
+    # df['mois'] = pd.to_datetime(df['mois'], format ='mixed')
+    # df.set_index('mois', inplace=True)
 
     # Split data into training (80%) and testing (20%)
     train_size = int(len(df) * 0.8)
@@ -116,15 +116,15 @@ for i, (file, sector) in enumerate(files.items()):
     # Faire des prédictions sur les données de test
     forecast = model_fit.forecast(steps=len(test))
 
-    mape = mean_absolute_percentage_error(test['estimation_ges'], forecast)
-    print(f"MAPE pour le secteur {sector}: {mape:.2f}")
+    mse = mean_squared_error(test['estimation_ges'], forecast)
+    print(f"MAPE pour le secteur {sector}: {mse:.2f}")
     
     # Tracer les résultats
     axs[i].plot(df['estimation_ges'], label=f'Historique {sector}')
     axs[i].plot(train.index, train_predictions, label=f'Prévisions Entraînement {sector}', color='red')
     axs[i].plot(test.index, test['estimation_ges'], label=f'Réalité {sector}', color='green')
     axs[i].plot(test.index, forecast, label=f'Prévisions {sector}', linestyle='--')
-    axs[i].set_title(f'Secteur {sector}')
+    axs[i].set_title(f'Secteur {sector}, mse = {mse:.2f}')
     axs[i].legend()
 
 plt.xlabel('Date')
